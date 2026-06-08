@@ -25,15 +25,28 @@ document.addEventListener("fullscreenchange", () => {
   fullscreenButton.textContent = document.fullscreenElement ? "EXIT" : "FULL";
 });
 
-const game = new Game(canvas, context); 
+const game = new Game(canvas, context);
+window.__shipExplorerGame = game;
 
+let started = false;
 
-
-const start = async () => {
-  if ("fonts" in document) {
-    await document.fonts.load('10px "Automatron"');
-  }
+const startGame = () => {
+  if (started) return;
+  started = true;
   game.start();
 };
 
-start();
+const warmUpFonts = async () => {
+  if ("fonts" in document) {
+    await Promise.race([
+      document.fonts.load('10px "Automatron"'),
+      new Promise((resolve) => window.setTimeout(resolve, 900)),
+    ]);
+  }
+};
+
+warmUpFonts()
+  .catch((error) => {
+    console.warn("ShipExplorer font warmup skipped", error);
+  })
+  .finally(startGame);
