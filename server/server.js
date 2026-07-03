@@ -17,9 +17,9 @@ const MAX_WS_PAYLOAD_BYTES = 2048;
 const MAX_WS_FRAME_BYTES = 4096;
 const STATE_PATH = path.join(__dirname, "state.json");
 const VIDEOS = {
-  video1: process.env.VIDEO_1_URL || "/videos/video1.mp4",
-  video2: process.env.VIDEO_2_URL || "/videos/video2.mp4",
-  video3: process.env.VIDEO_3_URL || "/videos/video3.mp4",
+  video1: process.env.VIDEO_1_URL || "/videos/01_sc9.06_PinLee_Tablet.mp4",
+  video2: process.env.VIDEO_2_URL || "/videos/02_B_sc9.06_PinLee_Tablet.mp4",
+  video3: process.env.VIDEO_3_URL || "/videos/03_B_sc9.06_PinLee_Tablet.mp4",
 };
 const VALID_VARIANTS = new Set(["info", "warning", "danger", "success"]);
 const VALID_VIDEO_IDS = new Set(Object.keys(VIDEOS));
@@ -28,6 +28,10 @@ const DEV_ALLOWED_ORIGINS = [
   "http://127.0.0.1:8080",
   "http://localhost:5500",
   "http://127.0.0.1:5500",
+];
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://selfmimesis.github.io",
+  "https://shipexplorer2.onrender.com",
 ];
 const COMMAND_RATE_LIMIT = {
   windowMs: 60 * 1000,
@@ -43,7 +47,7 @@ if (!ADMIN_TOKEN) {
   console.warn("WARNING: ADMIN_TOKEN is not set. Popup controller commands will be rejected.");
 }
 
-const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || "");
+const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(","));
 const allowedOriginSet = new Set([...allowedOrigins, ...(NODE_ENV === "development" ? DEV_ALLOWED_ORIGINS : [])]);
 let remoteState = createDefaultRemoteState();
 let saveQueue = Promise.resolve();
@@ -825,14 +829,15 @@ const CONTROLLER_HTML = `<!doctype html>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111314;
-      --panel: #181b1c;
-      --line: #1f7d72;
-      --cyan: #44e0c0;
-      --amber: #ff7a16;
-      --red: #e75a4f;
-      --text: #d7e3df;
-      --muted: #7f9695;
+      --bg: #000000;
+      --panel: #2A1236;
+      --line: #B84DFF;
+      --cyan: #9D00FF;
+      --amber: #D6FF00;
+      --orange: #FF8A00;
+      --red: #FF5A1F;
+      --text: #F3E8FF;
+      --muted: #98AA39;
     }
 
     * {
@@ -845,8 +850,8 @@ const CONTROLLER_HTML = `<!doctype html>
       display: grid;
       place-items: center;
       background:
-        linear-gradient(rgba(68, 224, 192, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(68, 224, 192, 0.035) 1px, transparent 1px),
+        linear-gradient(rgba(157, 0, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(157, 0, 255, 0.04) 1px, transparent 1px),
         var(--bg);
       background-size: 24px 24px;
       color: var(--text);
@@ -856,9 +861,9 @@ const CONTROLLER_HTML = `<!doctype html>
     main {
       width: min(620px, calc(100vw - 32px));
       border: 1px solid var(--line);
-      background: rgba(24, 27, 28, 0.92);
+      background: rgba(42, 18, 54, 0.58);
       padding: 24px;
-      box-shadow: 0 0 0 1px rgba(68, 224, 192, 0.18), 0 18px 80px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 0 0 1px rgba(157, 0, 255, 0.2), 0 18px 80px rgba(0, 0, 0, 0.45);
     }
 
     h1 {
@@ -889,7 +894,7 @@ const CONTROLLER_HTML = `<!doctype html>
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 0;
-      background: #0d1011;
+      background: #000000;
       color: var(--text);
       padding: 12px;
       font: inherit;
@@ -904,7 +909,7 @@ const CONTROLLER_HTML = `<!doctype html>
     input:focus,
     textarea:focus {
       border-color: var(--cyan);
-      box-shadow: 0 0 0 2px rgba(68, 224, 192, 0.14);
+      box-shadow: 0 0 0 2px rgba(157, 0, 255, 0.16);
     }
 
     .row {
@@ -924,7 +929,7 @@ const CONTROLLER_HTML = `<!doctype html>
 
     button {
       border: 1px solid var(--cyan);
-      background: rgba(68, 224, 192, 0.08);
+      background: rgba(157, 0, 255, 0.08);
       color: var(--text);
       padding: 11px 16px;
       font: inherit;
@@ -936,7 +941,7 @@ const CONTROLLER_HTML = `<!doctype html>
     button:hover {
       border-color: var(--amber);
       color: var(--amber);
-      background: rgba(255, 122, 22, 0.12);
+      background: rgba(255, 138, 0, 0.12);
     }
 
     button.danger {
@@ -945,8 +950,8 @@ const CONTROLLER_HTML = `<!doctype html>
 
     .status,
     .state {
-      border: 1px solid rgba(31, 125, 114, 0.7);
-      background: rgba(13, 16, 17, 0.72);
+      border: 1px solid rgba(136, 48, 191, 0.7);
+      background: rgba(42, 18, 54, 0.52);
       padding: 12px;
       color: var(--muted);
       margin-top: 18px;
