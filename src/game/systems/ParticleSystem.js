@@ -3,8 +3,8 @@ import { clamp, drawPixelLine, rand, randInt, withAlpha } from "../utils.js";
 
 const TYPE_COLORS = {
   normal: COLORS.cyan,
-  bonus: COLORS.orange,
-  unstable: COLORS.orangeHot,
+  bonus: COLORS.amber,
+  unstable: COLORS.red,
 };
 
 export class ParticleSystem {
