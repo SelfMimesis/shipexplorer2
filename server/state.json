@@ -1,22 +1,48 @@
 {
-  "popup": {
-    "visible": false,
-    "message": "",
-    "title": "",
-    "variant": "info",
-    "durationMs": 0,
-    "dismissible": true,
-    "updatedAt": ""
-  },
-  "video": {
-    "visible": false,
-    "id": "",
-    "url": "",
-    "updatedAt": ""
-  },
-  "screen": {
-    "locked": false,
-    "updatedAt": ""
-  },
-  "updatedAt": ""
+  "channels": {
+    "shipexplorer2hotel": {
+      "popup": {
+        "visible": false,
+        "message": "",
+        "title": "",
+        "variant": "info",
+        "durationMs": 0,
+        "dismissible": true,
+        "updatedAt": ""
+      },
+      "video": {
+        "visible": false,
+        "id": "",
+        "url": "",
+        "updatedAt": ""
+      },
+      "screen": {
+        "locked": false,
+        "updatedAt": ""
+      },
+      "updatedAt": ""
+    },
+    "shipexplorer2": {
+      "popup": {
+        "visible": false,
+        "message": "",
+        "title": "",
+        "variant": "info",
+        "durationMs": 0,
+        "dismissible": true,
+        "updatedAt": ""
+      },
+      "video": {
+        "visible": false,
+        "id": "",
+        "url": "",
+        "updatedAt": ""
+      },
+      "screen": {
+        "locked": false,
+        "updatedAt": ""
+      },
+      "updatedAt": ""
+    }
+  }
 }

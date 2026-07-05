@@ -47,6 +47,7 @@ Controller:
 
 ```text
 http://localhost:10000/controller.html
+http://localhost:10000/controller-shipexplorer2.html
 ```
 
 ## Variables De Entorno
@@ -143,7 +144,11 @@ Respuesta:
 
 ### GET /controller.html
 
-Sirve `controller.html`, una pagina HTML simple para controlar el popup.
+Sirve `controller.html`, el controller del canal hotel (`shipexplorer2hotel`).
+
+### GET /controller-shipexplorer2.html
+
+Sirve `controller-shipexplorer2.html`, el controller del canal `shipexplorer2`.
 
 ## WebSocket
 
@@ -157,7 +162,10 @@ En produccion usa:
 
 ```text
 wss://shipexplorer2.onrender.com/ws
+wss://shipexplorer2.onrender.com/ws?channel=shipexplorer2
 ```
+
+`/ws` sin parametro se conserva como canal hotel (`shipexplorer2hotel`). El juego principal `shipexplorer2` usa `?channel=shipexplorer2` para que sus popups, pantalla negra y videos no se mezclen con el hotel.
 
 La pagina publica de hotel usa `https://selfmimesis.github.io/shipexplorer2hotel/`, pero el navegador envia como origen `https://selfmimesis.github.io`; por eso ese origen es suficiente en `ALLOWED_ORIGINS`.
 

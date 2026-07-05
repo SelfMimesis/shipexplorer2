@@ -21,6 +21,9 @@ const CHAPTER_8_VIDEO_2_URL = process.env.CHAPTER_8_VIDEO_2_URL || "/videos/capi
 const CHAPTER_8_VIDEO_3_URL = process.env.CHAPTER_8_VIDEO_3_URL || "/videos/capitulo-8/03_sc8.22_PinLee_Tablet.mp4";
 const CHAPTER_9_VIDEO_2_URL = process.env.CHAPTER_9_VIDEO_2_URL || "/videos/capitulo-9/02_B_sc9.06_PinLee_Tablet.mp4";
 const CHAPTER_9_VIDEO_3_URL = process.env.CHAPTER_9_VIDEO_3_URL || "/videos/capitulo-9/03_B_sc9.06_PinLee_Tablet.mp4";
+const DEFAULT_CHANNEL_ID = "shipexplorer2hotel";
+const SHIPEXPLORER2_CHANNEL_ID = "shipexplorer2";
+const VALID_CHANNEL_IDS = new Set([DEFAULT_CHANNEL_ID, SHIPEXPLORER2_CHANNEL_ID]);
 const VIDEOS = {
   chapter8Video1: process.env.CHAPTER_8_VIDEO_1_URL || SHARED_TABLET_VIDEO_URL,
   chapter8Video2: CHAPTER_8_VIDEO_2_URL,
@@ -57,7 +60,7 @@ if (!ADMIN_TOKEN) {
 
 const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(","));
 const allowedOriginSet = new Set([...allowedOrigins, ...(NODE_ENV === "development" ? DEV_ALLOWED_ORIGINS : [])]);
-let remoteState = createDefaultRemoteState();
+let channelStates = createDefaultChannelStates();
 let saveQueue = Promise.resolve();
 
 const app = express();
@@ -110,11 +113,20 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/state", (req, res) => {
-  res.json(getPublicPopupState());
+  const channelId = normalizeChannelId(req.query.channel);
+  if (!channelId) {
+    return res.status(400).json({ ok: false, error: "Invalid channel" });
+  }
+
+  return res.json(getPublicPopupState(channelId));
 });
 
 app.get("/controller.html", (req, res) => {
   res.sendFile(path.join(__dirname, "controller.html"));
+});
+
+app.get("/controller-shipexplorer2.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "controller-shipexplorer2.html"));
 });
 
 app.use((req, res) => {
@@ -139,12 +151,20 @@ server.on("upgrade", (req, socket, head) => {
     return;
   }
 
+  const channelId = normalizeChannelId(url.searchParams.get("channel"));
+  if (!channelId) {
+    socket.write("HTTP/1.1 400 Bad Request\r\n\r\n");
+    socket.destroy();
+    return;
+  }
+
   if (!isWebSocketOriginAllowed(req.headers.origin)) {
     socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
     socket.destroy();
     return;
   }
 
+  req.channelId = channelId;
   wss.handleUpgrade(req, socket, head, (ws) => {
     wss.emit("connection", ws, req);
   });
@@ -154,6 +174,7 @@ wss.on("connection", (ws, req) => {
   const client = {
     ws,
     ip: getClientIp(req),
+    channelId: req.channelId || DEFAULT_CHANNEL_ID,
     isAlive: true,
   };
 
@@ -174,7 +195,7 @@ wss.on("connection", (ws, req) => {
     clients.delete(client);
   });
 
-  sendCurrentState(ws);
+  sendCurrentState(ws, client.channelId);
 });
 
 const heartbeat = setInterval(() => {
@@ -235,7 +256,7 @@ function handleWsMessage(client, data, isBinary) {
   }
 
   if (payload.type === "state:get") {
-    sendCurrentState(client.ws);
+    sendCurrentState(client.ws, client.channelId);
     return;
   }
 
@@ -261,12 +282,12 @@ function handleWsMessage(client, data, isBinary) {
       return;
     }
 
-    setPopupState(true, parsedPopup.value);
+    setPopupState(client.channelId, true, parsedPopup.value);
     return;
   }
 
   if (payload.type === "popup:hide") {
-    setPopupState(false);
+    setPopupState(client.channelId, false);
     return;
   }
 
@@ -277,27 +298,28 @@ function handleWsMessage(client, data, isBinary) {
       return;
     }
 
-    setVideoState(true, parsedVideo.videoId);
+    setVideoState(client.channelId, true, parsedVideo.videoId);
     return;
   }
 
   if (payload.type === "screen:lock") {
-    setScreenState(true);
+    setScreenState(client.channelId, true);
     return;
   }
 
   if (payload.type === "screen:unlock") {
-    setScreenState(false);
+    setScreenState(client.channelId, false);
     return;
   }
 
-  setVideoState(false);
+  setVideoState(client.channelId, false);
 }
 
-function setPopupState(popupVisible, popupOptions = {}) {
+function setPopupState(channelId, popupVisible, popupOptions = {}) {
   const updatedAt = new Date().toISOString();
+  const remoteState = getChannelState(channelId);
 
-  remoteState = {
+  setChannelState(channelId, {
     ...remoteState,
     popup: {
       visible: Boolean(popupVisible),
@@ -309,21 +331,22 @@ function setPopupState(popupVisible, popupOptions = {}) {
       updatedAt,
     },
     updatedAt,
-  };
+  });
 
   queueSavePopupState().catch((error) => {
     console.error("ERROR: Unable to persist popup state.", error);
   });
-  broadcastStateUpdate();
-  broadcastPopupUpdate();
+  broadcastStateUpdate(channelId);
+  broadcastPopupUpdate(channelId);
 }
 
-function setVideoState(videoVisible, videoId = "") {
+function setVideoState(channelId, videoVisible, videoId = "") {
   const normalizedVideoId = videoVisible ? videoId : "";
   if (normalizedVideoId && !VALID_VIDEO_IDS.has(normalizedVideoId)) return;
   const updatedAt = new Date().toISOString();
+  const remoteState = getChannelState(channelId);
 
-  remoteState = {
+  setChannelState(channelId, {
     ...remoteState,
     video: {
       visible: Boolean(videoVisible),
@@ -332,21 +355,22 @@ function setVideoState(videoVisible, videoId = "") {
       updatedAt,
     },
     updatedAt,
-  };
+  });
 
   queueSavePopupState().catch((error) => {
     console.error("ERROR: Unable to persist popup state.", error);
   });
-  broadcastStateUpdate();
-  broadcastVideoUpdate();
+  broadcastStateUpdate(channelId);
+  broadcastVideoUpdate(channelId);
 }
 
-function setScreenState(screenLocked) {
+function setScreenState(channelId, screenLocked) {
   const locked = Boolean(screenLocked);
   const updatedAt = new Date().toISOString();
+  const remoteState = getChannelState(channelId);
   const wasVideoVisible = remoteState.video.visible;
 
-  remoteState = {
+  setChannelState(channelId, {
     ...remoteState,
     screen: {
       locked,
@@ -361,21 +385,24 @@ function setScreenState(screenLocked) {
           updatedAt: wasVideoVisible ? updatedAt : remoteState.video.updatedAt,
         },
     updatedAt,
-  };
+  });
 
   queueSavePopupState().catch((error) => {
     console.error("ERROR: Unable to persist popup state.", error);
   });
-  broadcastStateUpdate();
-  broadcastScreenUpdate();
+  broadcastStateUpdate(channelId);
+  broadcastScreenUpdate(channelId);
   if (!locked && wasVideoVisible) {
-    broadcastVideoUpdate();
+    broadcastVideoUpdate(channelId);
   }
 }
 
-function getPublicPopupState() {
+function getPublicPopupState(channelId = DEFAULT_CHANNEL_ID) {
+  const remoteState = getChannelState(channelId);
+
   return {
-    state: getPublicRemoteState(),
+    channel: channelId,
+    state: getPublicRemoteState(channelId),
     popupVisible: remoteState.popup.visible,
     popupMessage: remoteState.popup.message,
     title: remoteState.popup.title,
@@ -391,11 +418,21 @@ function getPublicPopupState() {
 }
 
 async function startServer() {
-  remoteState = await loadPopupState();
+  channelStates = await loadPopupState();
 
   server.listen(PORT, HOST, () => {
     console.log(`${SERVICE_NAME} listening on ${HOST}:${PORT}`);
   });
+}
+
+function createDefaultChannelStates() {
+  const states = {};
+
+  for (const channelId of VALID_CHANNEL_IDS) {
+    states[channelId] = createDefaultRemoteState();
+  }
+
+  return states;
 }
 
 function createDefaultRemoteState() {
@@ -423,26 +460,47 @@ function createDefaultRemoteState() {
   };
 }
 
+function getChannelState(channelId) {
+  if (!VALID_CHANNEL_IDS.has(channelId)) return createDefaultRemoteState();
+  if (!channelStates[channelId]) {
+    channelStates = {
+      ...channelStates,
+      [channelId]: createDefaultRemoteState(),
+    };
+  }
+
+  return channelStates[channelId];
+}
+
+function setChannelState(channelId, nextState) {
+  if (!VALID_CHANNEL_IDS.has(channelId)) return;
+
+  channelStates = {
+    ...channelStates,
+    [channelId]: normalizePopupState(nextState),
+  };
+}
+
 async function loadPopupState() {
   try {
     const raw = await fs.readFile(STATE_PATH, "utf8");
     const loaded = JSON.parse(raw.replace(/^\uFEFF/, ""));
-    const normalizedState = normalizePopupState(loaded);
+    const normalizedState = normalizeChannelStates(loaded);
 
-    if (shouldPersistNormalizedState(loaded, normalizedState)) {
+    if (shouldPersistNormalizedState(loaded, { channels: normalizedState })) {
       await savePopupStateNow(normalizedState);
     }
 
     return normalizedState;
   } catch (error) {
     if (error.code === "ENOENT") {
-      const defaultState = createDefaultRemoteState();
+      const defaultState = createDefaultChannelStates();
       await savePopupStateNow(defaultState);
       return defaultState;
     }
 
     await moveCorruptStateFile(error);
-    const defaultState = createDefaultRemoteState();
+    const defaultState = createDefaultChannelStates();
     await savePopupStateNow(defaultState);
     return defaultState;
   }
@@ -450,6 +508,35 @@ async function loadPopupState() {
 
 function shouldPersistNormalizedState(original, normalized) {
   return JSON.stringify(original) !== JSON.stringify(normalized);
+}
+
+function normalizeChannelStates(candidate) {
+  const states = createDefaultChannelStates();
+
+  if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) {
+    if (candidate.channels && typeof candidate.channels === "object" && !Array.isArray(candidate.channels)) {
+      for (const channelId of VALID_CHANNEL_IDS) {
+        if (candidate.channels[channelId]) {
+          states[channelId] = normalizePopupState(candidate.channels[channelId]);
+        }
+      }
+
+      return states;
+    }
+
+    for (const channelId of VALID_CHANNEL_IDS) {
+      if (candidate[channelId]) {
+        states[channelId] = normalizePopupState(candidate[channelId]);
+      }
+    }
+
+    if (candidate[DEFAULT_CHANNEL_ID] || candidate[SHIPEXPLORER2_CHANNEL_ID]) {
+      return states;
+    }
+  }
+
+  states[DEFAULT_CHANNEL_ID] = normalizePopupState(candidate);
+  return states;
 }
 
 function normalizePopupState(candidate) {
@@ -557,7 +644,7 @@ async function moveCorruptStateFile(error) {
 }
 
 function queueSavePopupState() {
-  const snapshot = remoteState;
+  const snapshot = channelStates;
 
   saveQueue = saveQueue
     .catch(() => {})
@@ -567,7 +654,9 @@ function queueSavePopupState() {
 }
 
 async function savePopupStateNow(stateToSave) {
-  const normalizedState = normalizePopupState(stateToSave);
+  const normalizedState = {
+    channels: normalizeChannelStates(stateToSave),
+  };
   const tempPath = `${STATE_PATH}.${process.pid}.${Date.now()}.tmp`;
 
   await fs.mkdir(path.dirname(STATE_PATH), { recursive: true });
@@ -575,9 +664,12 @@ async function savePopupStateNow(stateToSave) {
   await fs.rename(tempPath, STATE_PATH);
 }
 
-function buildPopupUpdate() {
+function buildPopupUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const remoteState = getChannelState(channelId);
+
   return {
     type: "popup:update",
+    channel: channelId,
     popupVisible: remoteState.popup.visible,
     popupMessage: remoteState.popup.message,
     title: remoteState.popup.title,
@@ -588,9 +680,12 @@ function buildPopupUpdate() {
   };
 }
 
-function buildVideoUpdate() {
+function buildVideoUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const remoteState = getChannelState(channelId);
+
   return {
     type: "video:update",
+    channel: channelId,
     videoVisible: remoteState.video.visible,
     videoId: remoteState.video.id,
     videoUrl: remoteState.video.url,
@@ -598,23 +693,30 @@ function buildVideoUpdate() {
   };
 }
 
-function buildScreenUpdate() {
+function buildScreenUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const remoteState = getChannelState(channelId);
+
   return {
     type: "screen:update",
+    channel: channelId,
     screenLocked: remoteState.screen.locked,
     updatedAt: remoteState.screen.updatedAt,
   };
 }
 
-function buildStateUpdate() {
+function buildStateUpdate(channelId = DEFAULT_CHANNEL_ID) {
   return {
     type: "state:update",
-    state: getPublicRemoteState(),
+    channel: channelId,
+    state: getPublicRemoteState(channelId),
   };
 }
 
-function getPublicRemoteState() {
+function getPublicRemoteState(channelId = DEFAULT_CHANNEL_ID) {
+  const remoteState = getChannelState(channelId);
+
   return {
+    channel: channelId,
     popup: {
       visible: remoteState.popup.visible,
       message: remoteState.popup.message,
@@ -636,41 +738,45 @@ function getPublicRemoteState() {
   };
 }
 
-function sendCurrentState(ws) {
-  sendJson(ws, buildStateUpdate());
-  sendJson(ws, buildPopupUpdate());
-  sendJson(ws, buildVideoUpdate());
-  sendJson(ws, buildScreenUpdate());
+function sendCurrentState(ws, channelId = DEFAULT_CHANNEL_ID) {
+  sendJson(ws, buildStateUpdate(channelId));
+  sendJson(ws, buildPopupUpdate(channelId));
+  sendJson(ws, buildVideoUpdate(channelId));
+  sendJson(ws, buildScreenUpdate(channelId));
 }
 
-function broadcastStateUpdate() {
-  const message = buildStateUpdate();
+function broadcastStateUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const message = buildStateUpdate(channelId);
 
   for (const client of clients) {
+    if (client.channelId !== channelId) continue;
     sendJson(client.ws, message);
   }
 }
 
-function broadcastPopupUpdate() {
-  const message = buildPopupUpdate();
+function broadcastPopupUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const message = buildPopupUpdate(channelId);
 
   for (const client of clients) {
+    if (client.channelId !== channelId) continue;
     sendJson(client.ws, message);
   }
 }
 
-function broadcastVideoUpdate() {
-  const message = buildVideoUpdate();
+function broadcastVideoUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const message = buildVideoUpdate(channelId);
 
   for (const client of clients) {
+    if (client.channelId !== channelId) continue;
     sendJson(client.ws, message);
   }
 }
 
-function broadcastScreenUpdate() {
-  const message = buildScreenUpdate();
+function broadcastScreenUpdate(channelId = DEFAULT_CHANNEL_ID) {
+  const message = buildScreenUpdate(channelId);
 
   for (const client of clients) {
+    if (client.channelId !== channelId) continue;
     sendJson(client.ws, message);
   }
 }
@@ -793,6 +899,14 @@ function getClientIp(req) {
   }
 
   return req.socket.remoteAddress || "unknown";
+}
+
+function normalizeChannelId(value) {
+  if (value === undefined || value === null || value === "") return DEFAULT_CHANNEL_ID;
+  if (typeof value !== "string") return "";
+
+  const normalized = value.trim().toLowerCase();
+  return VALID_CHANNEL_IDS.has(normalized) ? normalized : "";
 }
 
 function parseAllowedOrigins(value) {

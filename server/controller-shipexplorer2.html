@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ShipExplorer Hotel Controller</title>
+  <title>ShipExplorer 2 Controller</title>
   <style>
     :root {
       color-scheme: dark;
       --bg: #000000;
-      --panel: #2A1236;
-      --deep: #07020A;
-      --cyan: #9D00FF;
-      --teal: #B84DFF;
-      --muted: #98AA39;
-      --amber: #D6FF00;
-      --orange: #FF8A00;
-      --red: #FF5A1F;
-      --white: #F7EEFF;
+      --panel: #071318;
+      --deep: #020508;
+      --cyan: #38F5E7;
+      --teal: #0FB7A3;
+      --muted: #6B9493;
+      --amber: #FF9D2E;
+      --orange: #FF5F2E;
+      --red: #FF3F36;
+      --white: #D8FFFB;
     }
 
     * {
@@ -29,9 +29,9 @@
       display: grid;
       place-items: center;
       background:
-        linear-gradient(rgba(157, 0, 255, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(157, 0, 255, 0.055) 1px, transparent 1px),
-        radial-gradient(circle at 50% 0%, rgba(214, 255, 0, 0.1), transparent 42%),
+        linear-gradient(rgba(56, 245, 231, 0.052) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 245, 231, 0.052) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, rgba(255, 157, 46, 0.11), transparent 42%),
         var(--bg);
       background-size: 28px 28px, 28px 28px, auto;
       color: var(--white);
@@ -42,8 +42,8 @@
     main {
       width: min(720px, 100%);
       border: 1px solid var(--teal);
-      background: rgba(42, 18, 54, 0.68);
-      box-shadow: 0 0 0 1px rgba(157, 0, 255, 0.18), 0 18px 90px rgba(0, 0, 0, 0.52);
+      background: rgba(7, 19, 24, 0.82);
+      box-shadow: 0 0 0 1px rgba(56, 245, 231, 0.18), 0 18px 90px rgba(0, 0, 0, 0.52);
       padding: 22px;
     }
 
@@ -52,7 +52,7 @@
       gap: 14px;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(184, 77, 255, 0.6);
+      border-bottom: 1px solid rgba(15, 183, 163, 0.6);
       padding-bottom: 16px;
       margin-bottom: 18px;
     }
@@ -73,10 +73,10 @@
       place-items: center;
       min-height: 72px;
       padding: 0;
-      border: 1px solid rgba(157, 0, 255, 0.56);
-      background: radial-gradient(circle at 50% 50%, rgba(214, 255, 0, 0.12), rgba(0, 0, 0, 0.92) 64%);
+      border: 1px solid rgba(56, 245, 231, 0.58);
+      background: radial-gradient(circle at 50% 50%, rgba(255, 157, 46, 0.13), rgba(2, 5, 8, 0.94) 64%);
       color: var(--cyan);
-      box-shadow: 0 0 0 1px rgba(157, 0, 255, 0.16), 0 0 24px rgba(157, 0, 255, 0.18);
+      box-shadow: 0 0 0 1px rgba(56, 245, 231, 0.16), 0 0 24px rgba(56, 245, 231, 0.18);
       cursor: pointer;
       overflow: hidden;
     }
@@ -85,7 +85,7 @@
       content: "";
       position: absolute;
       inset: 6px;
-      border: 1px solid rgba(184, 77, 255, 0.42);
+      border: 1px solid rgba(15, 183, 163, 0.42);
       pointer-events: none;
     }
 
@@ -94,7 +94,7 @@
       height: 58px;
       object-fit: contain;
       mix-blend-mode: screen;
-      filter: saturate(1.25) brightness(1.1) drop-shadow(0 0 10px rgba(157, 0, 255, 0.32));
+      filter: hue-rotate(144deg) saturate(1.35) brightness(1.1) drop-shadow(0 0 10px rgba(56, 245, 231, 0.32));
     }
 
     .controller-logo-fallback {
@@ -104,21 +104,21 @@
       line-height: 0.88;
       letter-spacing: 0.08em;
       text-align: center;
-      text-shadow: 0 0 12px rgba(157, 0, 255, 0.42);
+      text-shadow: 0 0 12px rgba(56, 245, 231, 0.42);
     }
 
     .controller-logo-toggle:hover,
     .controller-logo-toggle:focus-visible {
       border-color: var(--amber);
       color: var(--amber);
-      background: radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.12), rgba(0, 0, 0, 0.94) 64%);
+      background: radial-gradient(circle at 50% 50%, rgba(56, 245, 231, 0.12), rgba(2, 5, 8, 0.95) 64%);
       outline: none;
-      box-shadow: 0 0 0 1px rgba(214, 255, 0, 0.24), 0 0 28px rgba(214, 255, 0, 0.2);
+      box-shadow: 0 0 0 1px rgba(255, 157, 46, 0.24), 0 0 28px rgba(255, 157, 46, 0.2);
     }
 
     .controller-logo-toggle:hover .controller-logo,
     .controller-logo-toggle:focus-visible .controller-logo {
-      filter: saturate(1.12) brightness(1.1) drop-shadow(0 0 10px rgba(214, 255, 0, 0.34));
+      filter: hue-rotate(144deg) saturate(1.1) brightness(1.1) drop-shadow(0 0 10px rgba(255, 157, 46, 0.34));
     }
 
     h1 {
@@ -200,7 +200,7 @@
     select:focus,
     textarea:focus {
       border-color: var(--cyan);
-      box-shadow: 0 0 0 2px rgba(157, 0, 255, 0.16);
+      box-shadow: 0 0 0 2px rgba(56, 245, 231, 0.16);
     }
 
     .grid {
@@ -230,7 +230,7 @@
     .video-chapter + .video-chapter {
       margin-top: 22px;
       padding-top: 18px;
-      border-top: 1px solid rgba(184, 77, 255, 0.34);
+      border-top: 1px solid rgba(15, 183, 163, 0.34);
     }
 
     .video-chapter-title {
@@ -248,7 +248,7 @@
     button {
       min-height: 42px;
       border: 1px solid var(--cyan);
-      background: rgba(157, 0, 255, 0.08);
+      background: rgba(56, 245, 231, 0.08);
       color: var(--white);
       padding: 10px 14px;
       font: inherit;
@@ -260,7 +260,7 @@
     button:hover {
       border-color: var(--amber);
       color: var(--amber);
-      background: rgba(214, 255, 0, 0.12);
+      background: rgba(255, 157, 46, 0.12);
     }
 
     button.danger {
@@ -268,16 +268,16 @@
     }
 
     button:disabled {
-      border-color: rgba(152, 170, 57, 0.42);
-      background: rgba(152, 170, 57, 0.08);
-      color: rgba(152, 170, 57, 0.58);
+      border-color: rgba(107, 148, 147, 0.42);
+      background: rgba(107, 148, 147, 0.08);
+      color: rgba(107, 148, 147, 0.58);
       cursor: not-allowed;
     }
 
     button:disabled:hover {
-      border-color: rgba(152, 170, 57, 0.42);
-      background: rgba(152, 170, 57, 0.08);
-      color: rgba(152, 170, 57, 0.58);
+      border-color: rgba(107, 148, 147, 0.42);
+      background: rgba(107, 148, 147, 0.08);
+      color: rgba(107, 148, 147, 0.58);
     }
 
     .option {
@@ -309,7 +309,7 @@
     }
 
     .panel-section {
-      border-top: 1px solid rgba(184, 77, 255, 0.6);
+      border-top: 1px solid rgba(15, 183, 163, 0.6);
       margin-top: 22px;
       padding-top: 18px;
     }
@@ -324,7 +324,7 @@
 
     .video-status,
     .screen-status {
-      border: 1px solid rgba(184, 77, 255, 0.7);
+      border: 1px solid rgba(15, 183, 163, 0.7);
       background: var(--deep);
       color: var(--amber);
       padding: 9px 12px;
@@ -341,8 +341,8 @@
 
     .state,
     .logs {
-      border: 1px solid rgba(184, 77, 255, 0.7);
-      background: rgba(42, 18, 54, 0.58);
+      border: 1px solid rgba(15, 183, 163, 0.7);
+      background: rgba(7, 19, 24, 0.72);
       padding: 12px;
       margin-top: 18px;
     }
@@ -363,7 +363,7 @@
 
     .log-line {
       padding: 3px 0;
-      border-bottom: 1px solid rgba(184, 77, 255, 0.24);
+      border-bottom: 1px solid rgba(15, 183, 163, 0.24);
     }
 
     .log-line.error {
@@ -400,8 +400,8 @@
           <span class="controller-logo-fallback" hidden>MUR<br>DER<br>BOT</span>
         </button>
         <div>
-          <h1>ShipExplorer Hotel Control</h1>
-          <p>Panel remoto para la version hotel publicada en GitHub Pages.</p>
+          <h1>ShipExplorer 2 Control</h1>
+          <p>Panel remoto exclusivo para el juego ShipExplorer 2.</p>
         </div>
       </div>
       <div id="connectionState" class="badge" data-state="DESCONECTADO">DESCONECTADO</div>
@@ -525,13 +525,13 @@
 
   <script>
     const STORAGE_KEYS = {
-      token: "shipexplorer.popup.token",
-      rememberToken: "shipexplorer.popup.rememberToken",
-      message: "shipexplorer.popup.lastMessage",
-      title: "shipexplorer.popup.title",
-      variant: "shipexplorer.popup.variant",
-      durationMs: "shipexplorer.popup.durationMs",
-      dismissible: "shipexplorer.popup.dismissible"
+      token: "shipexplorer2.popup.token",
+      rememberToken: "shipexplorer2.popup.rememberToken",
+      message: "shipexplorer2.popup.lastMessage",
+      title: "shipexplorer2.popup.title",
+      variant: "shipexplorer2.popup.variant",
+      durationMs: "shipexplorer2.popup.durationMs",
+      dismissible: "shipexplorer2.popup.dismissible"
     };
 
     const connectionState = document.querySelector("#connectionState");
@@ -564,9 +564,9 @@
     const screenDetailState = document.querySelector("#screenDetailState");
     const logs = document.querySelector("#logs");
 
-    const RENDER_WS_URL = "wss://shipexplorer2.onrender.com/ws?channel=shipexplorer2hotel";
+    const RENDER_WS_URL = "wss://shipexplorer2.onrender.com/ws?channel=shipexplorer2";
     const protocol = location.protocol === "https:" ? "wss" : "ws";
-    const sameHostWsUrl = protocol + "://" + location.host + "/ws?channel=shipexplorer2hotel";
+    const sameHostWsUrl = protocol + "://" + location.host + "/ws?channel=shipexplorer2";
     const querySocketUrl = new URLSearchParams(location.search).get("socketUrl");
     const wsUrl = querySocketUrl || (location.hostname.endsWith(".github.io") ? RENDER_WS_URL : sameHostWsUrl);
 
