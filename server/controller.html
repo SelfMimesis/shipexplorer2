@@ -257,6 +257,35 @@
       color: rgba(127, 150, 149, 0.58);
     }
 
+    .video-rows {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .video-row {
+      border-top: 1px solid rgba(31, 125, 114, 0.34);
+      padding-top: 12px;
+    }
+
+    .video-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .video-row-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: normal;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .video-row .controls {
+      margin-top: 0;
+    }
+
     .option {
       display: flex;
       align-items: center;
@@ -447,10 +476,27 @@
         <div id="videoState" class="video-status" data-active="false">VIDEO: OFF</div>
       </div>
 
+      <div class="video-rows">
+        <section class="video-row" aria-labelledby="capitulo8VideoTitle">
+          <h3 id="capitulo8VideoTitle" class="video-row-title">CAPITULO 8</h3>
+          <div class="controls">
+            <button type="button" data-video-id="capitulo8Video1">VIDEO 1</button>
+            <button type="button" data-video-id="capitulo8Video2">VIDEO 2</button>
+            <button type="button" data-video-id="capitulo8Video3">VIDEO 3</button>
+          </div>
+        </section>
+
+        <section class="video-row" aria-labelledby="capitulo9VideoTitle">
+          <h3 id="capitulo9VideoTitle" class="video-row-title">CAPITULO 9</h3>
+          <div class="controls">
+            <button type="button" data-video-id="capitulo9Video1">VIDEO 1</button>
+            <button type="button" data-video-id="capitulo9Video2">VIDEO 2</button>
+            <button type="button" data-video-id="capitulo9Video3">VIDEO 3</button>
+          </div>
+        </section>
+      </div>
+
       <div class="controls">
-        <button id="video1Button" type="button">VIDEO 1</button>
-        <button id="video2Button" type="button">VIDEO 2</button>
-        <button id="video3Button" type="button">VIDEO 3</button>
         <button id="videoCloseButton" class="danger" type="button">CERRAR VIDEO</button>
       </div>
     </section>
@@ -511,9 +557,7 @@
     const hideButton = document.querySelector("#hideButton");
     const testButton = document.querySelector("#testButton");
     const videoState = document.querySelector("#videoState");
-    const video1Button = document.querySelector("#video1Button");
-    const video2Button = document.querySelector("#video2Button");
-    const video3Button = document.querySelector("#video3Button");
+    const videoButtons = Array.from(document.querySelectorAll("[data-video-id]"));
     const videoCloseButton = document.querySelector("#videoCloseButton");
     const screenState = document.querySelector("#screenState");
     const screenLockButton = document.querySelector("#screenLockButton");
@@ -534,7 +578,7 @@
     let reconnectAttempt = 0;
     let manualClose = false;
     let currentRemoteState = createEmptyRemoteState();
-    const commandButtons = [showButton, hideButton, testButton, video1Button, video2Button, video3Button, videoCloseButton, screenLockButton, screenUnlockButton];
+    const commandButtons = [showButton, hideButton, testButton, ...videoButtons, videoCloseButton, screenLockButton, screenUnlockButton];
 
     socketUrl.textContent = wsUrl;
     restoreForm();
@@ -781,8 +825,14 @@
       const token = tokenInput.value.trim();
       const labels = {
         video1: "video 1 enviado",
-        video2: "video 2 enviado",
-        video3: "video 3 enviado"
+        video2: "capitulo 8 video 2 enviado",
+        video3: "capitulo 8 video 3 enviado",
+        capitulo8Video1: "capitulo 8 video 1 enviado",
+        capitulo8Video2: "capitulo 8 video 2 enviado",
+        capitulo8Video3: "capitulo 8 video 3 enviado",
+        capitulo9Video1: "capitulo 9 video 1 enviado",
+        capitulo9Video2: "capitulo 9 video 2 enviado",
+        capitulo9Video3: "capitulo 9 video 3 enviado"
       };
       saveTokenPreference();
 
@@ -899,11 +949,19 @@
 
     function getVideoLabel(state) {
       const video = state && state.video ? state.video : {};
+      const labels = {
+        video1: "VIDEO 1",
+        video2: "CAPITULO 8 VIDEO 2",
+        video3: "CAPITULO 8 VIDEO 3",
+        capitulo8Video1: "CAPITULO 8 VIDEO 1",
+        capitulo8Video2: "CAPITULO 8 VIDEO 2",
+        capitulo8Video3: "CAPITULO 8 VIDEO 3",
+        capitulo9Video1: "CAPITULO 9 VIDEO 1",
+        capitulo9Video2: "CAPITULO 9 VIDEO 2",
+        capitulo9Video3: "CAPITULO 9 VIDEO 3"
+      };
       if (!video.visible) return "OFF";
-      if (video.id === "video1") return "VIDEO 1";
-      if (video.id === "video2") return "VIDEO 2";
-      if (video.id === "video3") return "VIDEO 3";
-      return "OFF";
+      return labels[video.id] || "OFF";
     }
 
     function setConnectionState(state) {
@@ -1026,9 +1084,9 @@
     showButton.addEventListener("click", () => showPopup());
     hideButton.addEventListener("click", hidePopup);
     testButton.addEventListener("click", sendTest);
-    video1Button.addEventListener("click", () => playVideo("video1"));
-    video2Button.addEventListener("click", () => playVideo("video2"));
-    video3Button.addEventListener("click", () => playVideo("video3"));
+    videoButtons.forEach((button) => {
+      button.addEventListener("click", () => playVideo(button.dataset.videoId));
+    });
     videoCloseButton.addEventListener("click", closeVideo);
     screenLockButton.addEventListener("click", lockScreen);
     screenUnlockButton.addEventListener("click", unlockScreen);

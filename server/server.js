@@ -16,10 +16,21 @@ const MAX_POPUP_DURATION_MS = 2147483647;
 const MAX_WS_PAYLOAD_BYTES = 2048;
 const MAX_WS_FRAME_BYTES = 4096;
 const STATE_PATH = path.join(__dirname, "state.json");
+const SHARED_VIDEO_1_URL = process.env.VIDEO_1_URL || "/videos/video1.mp4";
+const CAPITULO_8_VIDEO_2_URL = process.env.VIDEO_CAPITULO_8_2_URL || "/videos/capitulo-8/02_sc8.22_PinLee_Tablet.mp4";
+const CAPITULO_8_VIDEO_3_URL = process.env.VIDEO_CAPITULO_8_3_URL || "/videos/capitulo-8/03_sc8.22_PinLee_Tablet.mp4";
+const CAPITULO_9_VIDEO_2_URL = process.env.VIDEO_CAPITULO_9_2_URL || "/videos/capitulo-9/02_B_sc9.06_PinLee_Tablet.mp4";
+const CAPITULO_9_VIDEO_3_URL = process.env.VIDEO_CAPITULO_9_3_URL || "/videos/capitulo-9/03_B_sc9.06_PinLee_Tablet.mp4";
 const VIDEOS = {
-  video1: process.env.VIDEO_1_URL || "/videos/video1.mp4",
-  video2: process.env.VIDEO_2_URL || "/videos/video2.mp4",
-  video3: process.env.VIDEO_3_URL || "/videos/video3.mp4",
+  video1: SHARED_VIDEO_1_URL,
+  video2: CAPITULO_8_VIDEO_2_URL,
+  video3: CAPITULO_8_VIDEO_3_URL,
+  capitulo8Video1: SHARED_VIDEO_1_URL,
+  capitulo8Video2: CAPITULO_8_VIDEO_2_URL,
+  capitulo8Video3: CAPITULO_8_VIDEO_3_URL,
+  capitulo9Video1: SHARED_VIDEO_1_URL,
+  capitulo9Video2: CAPITULO_9_VIDEO_2_URL,
+  capitulo9Video3: CAPITULO_9_VIDEO_3_URL,
 };
 const VALID_VARIANTS = new Set(["info", "warning", "danger", "success"]);
 const VALID_VIDEO_IDS = new Set(Object.keys(VIDEOS));
@@ -496,7 +507,7 @@ function normalizePopupState(candidate) {
   const rawVideoId = typeof sourceVideo.id === "string" ? sourceVideo.id : "";
 
   if (videoVisible && !VALID_VIDEO_IDS.has(rawVideoId)) {
-    throw new Error("Persisted video.id must be video1, video2, or video3 when video.visible is true.");
+    throw new Error("Persisted video.id is not valid when video.visible is true.");
   }
 
   const videoId = videoVisible ? rawVideoId : "";
