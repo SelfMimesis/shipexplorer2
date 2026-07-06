@@ -17,6 +17,8 @@ const MAX_WS_PAYLOAD_BYTES = 2048;
 const MAX_WS_FRAME_BYTES = 4096;
 const STATE_PATH = path.join(__dirname, "state.json");
 const SHARED_TABLET_VIDEO_URL = process.env.SHARED_TABLET_VIDEO_URL || process.env.VIDEO_1_URL || "/videos/01_sc9.06_PinLee_Tablet.mp4";
+const CHAPTER_4B_VIDEO_2_URL = process.env.CHAPTER_4B_VIDEO_2_URL || "/videos/capitulo-4b/02_Port_FreeCommerce_Apartment_A9_tablet_Popup_Action_v02.mp4";
+const CHAPTER_4B_VIDEO_3_URL = process.env.CHAPTER_4B_VIDEO_3_URL || "/videos/capitulo-4b/03_Port_FreeCommerce_Apartment_A9_tablet_Popup_Loop_v01.mp4";
 const CHAPTER_8_VIDEO_2_URL = process.env.CHAPTER_8_VIDEO_2_URL || "/videos/capitulo-8/02_sc8.22_PinLee_Tablet.mp4";
 const CHAPTER_8_VIDEO_3_URL = process.env.CHAPTER_8_VIDEO_3_URL || "/videos/capitulo-8/03_sc8.22_PinLee_Tablet.mp4";
 const CHAPTER_9_VIDEO_2_URL = process.env.CHAPTER_9_VIDEO_2_URL || "/videos/capitulo-9/02_B_sc9.06_PinLee_Tablet.mp4";
@@ -25,6 +27,9 @@ const DEFAULT_CHANNEL_ID = "shipexplorer2hotel";
 const SHIPEXPLORER2_CHANNEL_ID = "shipexplorer2";
 const VALID_CHANNEL_IDS = new Set([DEFAULT_CHANNEL_ID, SHIPEXPLORER2_CHANNEL_ID]);
 const VIDEOS = {
+  chapter4bVideo1: process.env.CHAPTER_4B_VIDEO_1_URL || SHARED_TABLET_VIDEO_URL,
+  chapter4bVideo2: CHAPTER_4B_VIDEO_2_URL,
+  chapter4bVideo3: CHAPTER_4B_VIDEO_3_URL,
   chapter8Video1: process.env.CHAPTER_8_VIDEO_1_URL || SHARED_TABLET_VIDEO_URL,
   chapter8Video2: CHAPTER_8_VIDEO_2_URL,
   chapter8Video3: CHAPTER_8_VIDEO_3_URL,
